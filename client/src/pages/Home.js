@@ -37,6 +37,24 @@ class Home extends Component {
               Personen
             </Button>
           </Col>
+          <Col>
+            <Button
+              onClick={() => this.props.history.push("/trainers")}
+              variant="outline-primary"
+              className={styles.bigButton}
+            >
+              Trainer
+            </Button>
+          </Col>
+          <Col>
+            <Button
+              onClick={() => this.props.history.push("/statistics")}
+              variant="outline-primary"
+              className={styles.bigButton}
+            >
+              Statistiken
+            </Button>
+          </Col>
         </Row>
       </Container>
     );

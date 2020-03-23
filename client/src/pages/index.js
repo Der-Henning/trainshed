@@ -9,5 +9,8 @@ import User from "./User";
 import Person from "./Person";
 import Persons from "./Persons";
 import Bookings from "./Bookings";
+import TrainingTypes from "./TrainingTypes";
+import Trainers from "./Trainers";
+import Statistics from "./Statistics";
 
-export { Home, Login, Trainings, Training, Units, Admin, Users, User, Person, Persons, Bookings };
+export { Home, Login, Trainings, Training, Units, Admin, Users, User, Person, Persons, Bookings, TrainingTypes, Trainers, Statistics };

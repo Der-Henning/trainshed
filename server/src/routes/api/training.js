@@ -20,27 +20,32 @@ const trainingData = {
   order: [["startDate", "ASC"]],
   include: [
     {
-      model: models.Trainer,
-      through: {
-        attributes: []
-      },
+      model: models.TrainingTrainer,
+      as: "Trainers",
       attributes: [
-        [literal("`Trainers`.id"), "trainerId"],
-        "trainer",
-        "examiner",
-        [literal("`Trainers->TrainingTrainer`.status"), "status"],
-        [literal("`Trainers->Person`.id"), "personId"],
-        [literal("`Trainers->Person`.persNum"), "persNum"],
-        [literal("`Trainers->Person`.name"), "name"],
-        [literal("`Trainers->Person`.rank"), "rank"],
-        [literal("`Trainers->Person`.givenName"), "givenName"],
-        [literal("`Trainers->Person->Unit`.name"), "unit"]
+        "id",
+        [literal("`Trainers`.status"), "status"],
+        [literal("`Trainers->Trainer`.trainer"), "trainer"],
+        [literal("`Trainers->Trainer`.examiner"), "examiner"],
+        [literal("`Trainers->Trainer`.id"), "trainerId"],
+        [literal("`Trainers->Trainer->Person`.id"), "personId"],
+        [literal("`Trainers->Trainer->Person`.persNum"), "persNum"],
+        [literal("`Trainers->Trainer->Person`.name"), "name"],
+        [literal("`Trainers->Trainer->Person`.rank"), "rank"],
+        [literal("`Trainers->Trainer->Person`.givenName"), "givenName"],
+        [literal("`Trainers->Trainer->Person->Unit`.name"), "unit"]
       ],
       include: [
         {
-          model: models.Person,
+          model: models.Trainer,
           attributes: [],
-          include: [{ model: models.Unit, attributes: [] }]
+          include: [
+            {
+              model: models.Person,
+              attributes: [],
+              include: [{ model: models.Unit, attributes: [] }]
+            }
+          ]
         }
       ]
     },
@@ -95,6 +100,64 @@ router.get("/", auth, async (req, res, next) => {
   }
 });
 
+router.get("/statistics/trainings/:type", auth, async (req, res, next) => {
+  const { type } = req.params;
+
+  if (req.level < 10) return next(new errors.UnauthorizedError());
+  try {
+    var statistics = await models.Training.findAll({
+      attributes: [
+        [fn("YEAR", col("startDate")), "year"],
+        [fn("MONTH", col("startDate")), "month"],
+        "status",
+        [fn("COUNT", col("`TrainingType`.type")), "count"]
+      ],
+      include: [
+        { model: models.TrainingTrainee, as: "Trainees", attributes: [] },
+        { model: models.TrainingType, attributes: [], where: { type: type } }
+      ],
+      group: ["year", "month", "status"],
+      raw: true
+    });
+    res.status(200).send(errors.success(statistics));
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get("/statistics/units/:type", auth, async (req, res, next) => {
+  const { type } = req.params;
+
+  if (req.level < 10) return next(new errors.UnauthorizedError());
+  try {
+    var statistics = await models.Training.findAll({
+      attributes: [
+        [fn("YEAR", col("startDate")), "year"],
+        [fn("MONTH", col("startDate")), "month"],
+        [literal("`Trainees->Unit`.name"), "unit"],
+        [literal("`Trainees`.status"), "status"],
+        [fn("SUM", col("maxTrainees")), "maxTrainees"],
+        [fn("COUNT", col("`TrainingType`.type")), "count"]
+      ],
+      where: { status: "finished" },
+      include: [
+        {
+          model: models.TrainingTrainee,
+          as: "Trainees",
+          attributes: [],
+          include: [{ model: models.Unit, attributes: [] }]
+        },
+        { model: models.TrainingType, attributes: [], where: { type: type } }
+      ],
+      group: ["year", "month", "unit", "status"],
+      raw: true
+    });
+    res.status(200).send(errors.success(statistics));
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get("/statusList", auth, (req, res, next) => {
   if (req.level < 10) return next(new errors.UnauthorizedError());
   res.status(200).send(errors.success(models.Training.statusList));
@@ -108,6 +171,11 @@ router.get("/reasonList", auth, (req, res, next) => {
 router.get("/traineeStatusList", auth, (req, res, next) => {
   if (req.level < 10) return next(new errors.UnauthorizedError());
   res.status(200).send(errors.success(models.TrainingTrainee.statusList));
+});
+
+router.get("/trainerStatusList", auth, (req, res, next) => {
+  if (req.level < 10) return next(new errors.UnauthorizedError());
+  res.status(200).send(errors.success(models.TrainingTrainer.statusList));
 });
 
 router.get("/:trainingId", auth, async (req, res, next) => {
@@ -257,12 +325,38 @@ router.post("/:trainingId/trainer/:trainerId", auth, async (req, res, next) => {
   }
 });
 
+router.put("/trainer/:trainingTrainerId", auth, async (req, res, next) => {
+  const { trainingTrainerId } = req.params;
+  const { status } = req.body;
+
+  try {
+    if (req.level < 50) return next(new errors.UnauthorizedError());
+    if (!trainingTrainerId) return next(new errors.MissingParameterError());
+
+    var trainingTrainer = await models.TrainingTrainer.findByPk(
+      trainingTrainerId,
+      {
+        include: [{ model: models.Training }]
+      }
+    );
+    if (!trainingTrainer)
+      return next(new errors.ResourceNotFoundError("Training-Trainer"));
+
+    trainingTrainer.status = status;
+    await trainingTrainer.save();
+
+    res.status(200).send(errors.success());
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.delete("/trainer/:trainingTrainerId", auth, async (req, res, next) => {
   const { trainingTrainerId } = req.params;
 
   try {
     if (req.level < 50) return next(new errors.UnauthorizedError());
-    if (!TrainingTrainerId) return next(new errors.MissingParameterError());
+    if (!trainingTrainerId) return next(new errors.MissingParameterError());
 
     var trainingTrainer = await models.TrainingTrainer.findByPk(
       trainingTrainerId

@@ -4,12 +4,24 @@ const router = require("express").Router();
 const models = require("../../models");
 const auth = require("../../middleware/auth");
 const errors = require("../../middleware/errors");
-const { Op } = require("sequelize");
+const { Op, literal } = require("sequelize");
 
 const trainerData = {
-  attributes: ["id", "trainer", "examiner"],
+  attributes: [
+    "id",
+    "trainer",
+    "examiner",
+    [literal("`Person`.id"), "PersonId"],
+    [literal("`Person`.persNum"), "persNum"],
+    [literal("`Person`.name"), "name"],
+    [literal("`Person`.givenName"), "givenName"],
+    [literal("`Person`.rank"), "rank"]
+  ],
   include: [
-    { model: models.Person, attributes: ["id", "name", "givenName", "persNum"] }
+    {
+      model: models.Person,
+      attributes: []
+    }
   ],
   where: { PersonId: { [Op.not]: null } }
 };

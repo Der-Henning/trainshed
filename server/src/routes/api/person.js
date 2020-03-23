@@ -38,6 +38,37 @@ router.get("/", auth, (req, res, next) => {
     .catch(error => next(error));
 });
 
+router.get("/findByPN/:PersNum", auth, async (req, res, next) => {
+  var { PersNum } = req.params;
+  var query = personData;
+
+  try {
+    if (req.level < 30) return next(new errors.UnauthorizedError());
+    if (!PersNum) return next(new errors.MissingParameterError());
+    personData.where = { PersNum: PersNum };
+    var person = await models.Person.findOne(query);
+    if (!person) return next(new errors.ResourceNotFoundError("Person"));
+    if (person.UnitId != req.unitId && req.level < 50) return next(new errors.UnauthorizedError());
+    res.status(200).send(errors.success(person));
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get("/find", auth, async (req, res, next) => {
+  var params = personData;
+  params.where = req.body;
+
+  try {
+    if (req.level < 30) return next(new errors.UnauthorizedError());
+
+    var persons = await models.Person.findAll(params);
+    res.status(200).send(errors.success(persons));
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get("/:id", auth, (req, res, next) => {
   const { id } = req.params;
 

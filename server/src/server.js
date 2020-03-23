@@ -22,6 +22,7 @@ server.use("/api/v1", apiRouter);
 server.use(express.static(path.join(__dirname, "../../client/build")));
 
 server.use(function(err, req, res, next) {
+  console.log(err);
   res.status(500).send("Something broke!");
 });
 

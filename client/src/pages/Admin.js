@@ -37,6 +37,15 @@ class Admin extends Component {
               Nutzer bearbeiten
             </Button>
           </Col>
+          <Col>
+            <Button
+              onClick={() => this.props.history.push("/admin/trainingtypes")}
+              variant="outline-primary"
+              className={styles.bigButton}
+            >
+              Training Typen bearbeiten
+            </Button>
+          </Col>
         </Row>
       </Container>
     );

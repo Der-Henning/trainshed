@@ -26,8 +26,6 @@ router.use("/user", userRouter);
 router.use((err, req, res, next) => {
   if (err instanceof sequelize.ConnectionRefusedError)
     res.status(500).send(errors.error(20, "Database offline"));
-  else if (err instanceof sequelize.DatabaseError)
-    res.status(500).send(errors.error(21, "Database Error"));
   else if (err instanceof errors.MissingParameterError)
     res.status(400).send(errors.error(10, "Missing Parameter(s)"));
   else if (err instanceof errors.ResourceNotFoundError)
@@ -46,6 +44,10 @@ router.use((err, req, res, next) => {
     res.status(400).send(errors.error(14, err.errors[0].message));
   else if (err instanceof sequelize.ValidationError)
     res.status(400).send(errors.error(15, err.errors[0].message));
+  else if (err instanceof sequelize.ForeignKeyConstraintError)
+    res.status(400).send(errors.error(18, "Doesn't exist"));
+  else if (err instanceof sequelize.DatabaseError)
+    res.status(500).send(errors.error(21, "Database Error"));
   else res.status(500).send(errors.error(99, "Internel Server Error"));
 
   console.log(err);

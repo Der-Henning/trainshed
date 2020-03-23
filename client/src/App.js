@@ -12,7 +12,10 @@ import {
   User,
   Person,
   Persons,
-  Bookings
+  Bookings,
+  TrainingTypes,
+  Trainers,
+  Statistics
 } from "./pages";
 import { Header } from "./components";
 import "./App.css";
@@ -59,7 +62,6 @@ class App extends React.Component {
               path="/training"
               render={() => <Training api={api} token={token} />}
             />
-
             <Route
               path="/persons"
               render={() => <Persons api={api} token={token} />}
@@ -71,6 +73,18 @@ class App extends React.Component {
             <Route
               path="/person"
               render={() => <Person api={api} token={token} />}
+            />
+            <Route
+              path="/admin/trainingtypes"
+              render={() => <TrainingTypes api={api} token={token} />}
+            />
+            <Route
+              path="/trainers"
+              render={() => <Trainers api={api} token={token} />}
+            />
+            <Route
+              path="/statistics"
+              render={() => <Statistics api={api} token={token} />}
             />
             <Route
               path="/admin/units"

@@ -38,7 +38,7 @@ class Persons extends Component {
           Person anlegen
         </Button>
         <div className="table-responsive">
-          <Table className="table-hover">
+          <Table className="table-hover table-sm">
             <thead>
               <tr>
                 <th>Personalnummer</th>
@@ -54,12 +54,12 @@ class Persons extends Component {
                 data.map((t, key) => {
                   return (
                     <tr key={key}>
-                      <td>{t.persNum}</td>
-                      <td>{t.rank}</td>
-                      <td>{t.givenName}</td>
-                      <td>{t.name}</td>
-                      <td>{t.unit}</td>
-                      <td>
+                      <td className="align-middle">{t.persNum}</td>
+                      <td className="align-middle">{t.rank}</td>
+                      <td className="align-middle">{t.givenName}</td>
+                      <td className="align-middle">{t.name}</td>
+                      <td className="align-middle">{t.unit}</td>
+                      <td className="align-middle">
                         <Button
                           variant="outline-dark"
                           onClick={() => {

@@ -23,7 +23,8 @@ class TrainingForm extends Component {
       statusList: [],
       reasonList: [],
       trainingId: this.props.match.params.id,
-      reason: false
+      reason: false,
+      saved: true
     };
   }
 
@@ -144,6 +145,16 @@ class TrainingForm extends Component {
     else this.addTraining();
   };
 
+  closeForm = () => {
+    const { saved } = this.state;
+    const route =
+      this.props.location.state && this.props.location.state.backRoute
+        ? this.props.location.state.backRoute
+        : "/trainings";
+    if (saved || window.confirm("Schließen ohne zu speichern?"))
+      this.props.history.push(route);
+  };
+
   error = () => {
     const { error } = this.state;
     if (error)
@@ -157,7 +168,7 @@ class TrainingForm extends Component {
     var showReason =
       name === "status" ? (value === "cancelled" ? true : false) : reason;
     data[name] = value;
-    this.setState({ data, reason: showReason });
+    this.setState({ data, reason: showReason, saved: false });
   };
 
   componentDidMount() {
@@ -280,7 +291,7 @@ class TrainingForm extends Component {
             variant="outline-secondary"
             type="button"
             onClick={() => {
-              this.props.history.push("/trainings");
+              this.closeForm();
             }}
           >
             Schließen

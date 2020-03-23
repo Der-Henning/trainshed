@@ -5,26 +5,26 @@ import Axios from "axios";
 import qs from "qs";
 import styles from "../styles/styles.module.css";
 
-class Units extends Component {
+class TrainingTypes extends Component {
   constructor(props) {
     super(props);
     this.state = {
       error: null,
       data: null,
       formData: {
-        name: ""
+        type: ""
       }
     };
   }
 
   componentDidMount() {
     if (!this.props.token) this.props.history.push("/login");
-    else this.fetchUnits();
+    else this.fetchTrainingTypes();
   }
 
-  fetchUnits = () => {
+  fetchTrainingTypes = () => {
     const { api, token } = this.props;
-    Axios.get(api + "/unit", {
+    Axios.get(api + "/trainingType", {
       headers: { "x-access-token": token }
     })
       .then(res => {
@@ -35,13 +35,13 @@ class Units extends Component {
       });
   };
 
-  deleteUnit = id => {
+  deleteTrainingType = id => {
     const { api, token } = this.props;
-    Axios.delete(api + "/unit/" + id, {
+    Axios.delete(api + "/trainingType/" + id, {
       headers: { "x-access-token": token }
     })
       .then(() => {
-        this.fetchUnits();
+        this.fetchTrainingTypes();
       })
       .catch(err => {
         if (err.response) alert(err.response.data.status);
@@ -53,12 +53,12 @@ class Units extends Component {
     const { api, token } = this.props;
     const { formData } = this.state;
     this.setState({ error: null });
-    Axios.post(api + "/unit", qs.stringify(formData), {
+    Axios.post(api + "/trainingType", qs.stringify(formData), {
       headers: { "x-access-token": token }
     })
       .then(() => {
-        this.setState({ formData: { name: "" } });
-        this.fetchUnits();
+        this.setState({ formData: { type: "" } });
+        this.fetchTrainingTypes();
       })
       .catch(err => {
         if (err.response) this.setState({ error: err.response.data.status });
@@ -83,16 +83,16 @@ class Units extends Component {
     const { data, formData } = this.state;
     return (
       <div className={styles.wrapper}>
-        <h3>Einheiten</h3>
+        <h3>Training Typen</h3>
         <div className="col-xs-12" style={{ height: "50px" }} />
         <Form onSubmit={this.submitHandler}>
           <Form.Group>
-            <Form.Label>neue Einheit</Form.Label>
+            <Form.Label>neuer Training Typ</Form.Label>
             <Form.Control
-              name="name"
+              name="type"
               type="text"
               autoFocus
-              value={formData.name}
+              value={formData.type}
               onChange={this.changeHandler}
             />
           </Form.Group>
@@ -105,7 +105,7 @@ class Units extends Component {
         <Table className="table-sm">
           <thead>
             <tr>
-              <th>Einheit</th>
+              <th>Training Typ</th>
               <th></th>
             </tr>
           </thead>
@@ -114,19 +114,19 @@ class Units extends Component {
               data.map((t, key) => {
                 return (
                   <tr key={key}>
-                    <td className="align-middle">{t.name}</td>
-                    <td className="align-middle">
+                    <td>{t.type}</td>
+                    <td>
                       <Button
                         variant="danger"
                         onClick={() => {
                           if (
                             window.confirm(
-                              "Wollen Sie wirklich die Einheit " +
+                              "Wollen Sie wirklich den Typ " +
                                 t.name +
                                 " löschen?"
                             )
                           )
-                            this.deleteUnit(t.id);
+                            this.deleteTrainingType(t.id);
                         }}
                       >
                         löschen
@@ -145,4 +145,4 @@ class Units extends Component {
   }
 }
 
-export default withRouter(Units);
+export default withRouter(TrainingTypes);

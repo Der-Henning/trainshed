@@ -1,3 +1,6 @@
 import Header from "./header";
+import Trainees from "./trainees";
+import Trainers from "./trainers";
+import ChartTrainings from "./chartTrainings";
 
-export { Header };
+export { Header, Trainees, Trainers, ChartTrainings };
