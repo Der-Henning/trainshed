@@ -7,15 +7,19 @@ const basename = path.basename(__filename);
 const config = require("../config");
 var db = {};
 
-const sequelize = new Sequelize(
-  config.mysql_database,
-  config.mysql_username,
-  config.mysql_password,
-  {
-    host: config.mysql_host,
-    dialect: "mysql"
-  }
-);
+var sequelize = null;
+
+if (config.database) sequelize = new Sequelize(config.database);
+else
+  sequelize = new Sequelize(
+    config.mysql_database,
+    config.mysql_username,
+    config.mysql_password,
+    {
+      host: config.mysql_host,
+      dialect: "mysql"
+    }
+  );
 
 fs.readdirSync(__dirname)
   .filter(file => {
