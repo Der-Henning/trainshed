@@ -11,7 +11,7 @@
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "postinstall": "cd server && npm install && cd .. && cd client && npm install",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false cd client && npm install && npm run build"
+    "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false cd client && npm install && npm run build && cd .. && cd server && npm install && npm run build"
   },
   "author": "Henning Merklinger",
   "license": "ISC",
