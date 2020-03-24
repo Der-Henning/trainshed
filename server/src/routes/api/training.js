@@ -225,7 +225,7 @@ router.post("/", auth, async (req, res, next) => {
     data.TrainingTypeId = TrainingType.id;
 
     var training = await models.Training.create(data);
-    var training = models.Training.findByPk(training.id, trainingData);
+    var training = await models.Training.findByPk(training.id, trainingData);
 
     res.status(200).send(errors.success(training));
   } catch (err) {

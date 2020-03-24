@@ -17,9 +17,9 @@ var port = normalizePort(config.port || "4000");
 
 server.use(bodyparser.urlencoded({ extended: true }));
 
-server.use("/", indexRouter);
 server.use("/api/v1", apiRouter);
 server.use(express.static(path.join(__dirname, "../../client/build")));
+server.use("/*", indexRouter);
 
 server.use(function(err, req, res, next) {
   console.log(err);

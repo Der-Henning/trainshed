@@ -85,9 +85,9 @@ class TrainingForm extends Component {
       .then(res => {
         this.setState({
           data: res.data.data,
-          newTraining: false,
-          tainingId: res.data.data.id,
-          error: res.data.status
+          trainingId: res.data.data.id,
+          error: res.data.status,
+          saved: true
         });
       })
       .catch(err => {
@@ -111,8 +111,8 @@ class TrainingForm extends Component {
       .then(res => {
         this.setState({
           data: res.data.data,
-          newTraining: false,
-          error: res.data.status
+          error: res.data.status,
+          saved: true
         });
       })
       .catch(err => {
