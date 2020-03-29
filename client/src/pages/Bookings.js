@@ -89,8 +89,9 @@ class Bookings extends Component {
             });
           }}
         >
-          bearbeiten
+          Training bearbeiten
         </Button>
+        <div className="col-xs-12" style={{ height: "50px" }} />
         <Trainees
           trainingId={trainingId}
           trainees={data.Trainees}

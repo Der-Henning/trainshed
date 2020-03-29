@@ -9,84 +9,78 @@ const unitData = {
   attributes: ["id", "name"]
 };
 
-router.get("/", auth, (req, res, next) => {
-  if (req.level < 10) throw new errors.UnauthorizedError();
-  models.Unit.findAll(unitData)
-    .then(units => {
-      res.status(200).send(errors.success(units));
-    })
-    .catch(error => next(error));
+router.get("/", auth, async (req, res, next) => {
+  try {
+    if (req.level < 10) return next(new errors.UnauthorizedError());
+    var units = await models.Unit.findAll(unitData);
+    res.status(200).send(errors.success(units));
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.get("/:id", auth, (req, res, next) => {
+router.get("/:id", auth, async (req, res, next) => {
   const { id } = req.params;
 
-  if (req.level < 10) throw new errors.UnauthorizedError();
-  if (!id) throw new errors.MissingParameterError();
-  models.Unit.findByPk(id, unitData).then(unit => {
-    if (!unit) throw new errors.ResourceNotFoundError("Unit");
+  try {
+    if (req.level < 10) return next(new errors.UnauthorizedError());
+    if (!id) return next(new errors.MissingParameterError());
+    var unit = await models.Unit.findByPk(id, unitData);
+    if (!unit) return next(new errors.ResourceNotFoundError("Unit"));
     res.status(200).send(errors.success(unit));
-  });
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.post("/", auth, (req, res, next) => {
+router.post("/", auth, async (req, res, next) => {
   const { name } = req.body;
 
-  if (req.level < 90) throw new errors.UnauthorizedError();
-  if (!name) throw new errors.MissingParameterError();
-  models.Unit.create({
-    name: name
-  })
-    .then(() => {
-      models.Unit.findAll(unitData)
-        .then(units => {
-          res.status(200).send(errors.success(units));
-        })
-        .catch(error => next(error));
-    })
-    .catch(error => next(error));
+  try {
+    if (req.level < 90) return next(new errors.UnauthorizedError());
+    if (!name) return next(new errors.MissingParameterError());
+    await models.Unit.create({
+      name: name
+    });
+    var units = await models.Unit.findAll(unitData);
+    res.status(200).send(errors.success(units));
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.put("/:id", auth, (req, res, next) => {
+router.put("/:id", auth, async (req, res, next) => {
   const { id } = req.params;
   const { name } = req.body;
 
-  if (req.level < 90) throw new errors.UnauthorizedError();
-  if (!id || !name) throw new errors.MissingParameterError();
-  models.Unit.findByPk(id).then(unit => {
-    if (!unit) throw new errors.ResourceNotFoundError("Unit");
+  try {
+    if (req.level < 90) return next(new errors.UnauthorizedError());
+    if (!id || !name) return next(new errors.MissingParameterError());
+    var unit = await models.Unit.findByPk(id);
+    if (!unit) return next(new errors.ResourceNotFoundError("Unit"));
     unit.name = name || unit.name;
-    unit
-      .save()
-      .then(() => {
-        models.Unit.findAll(unitData).then(units => {
-          res.status(200).send(errors.success(units));
-        });
-      })
-      .catch(error => next(error));
-  });
+    await unit.save();
+    var units = await models.Unit.findAll(unitData);
+    res.status(200).send(errors.success(units));
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.delete("/:id", auth, (req, res, next) => {
+router.delete("/:id", auth, async (req, res, next) => {
   const { id } = req.params;
 
-  if (req.level < 90) throw new errors.UnauthorizedError();
-  if (!id) throw new errors.MissingParameterError();
-  models.Unit.findByPk(id)
-    .then(unit => {
-      if (!unit) throw new errors.ResourceNotFoundError("Unit");
-      unit
-        .destroy()
-        .then(() => {
-          models.Unit.findAll(unitData)
-            .then(units => {
-              res.status(200).send(errors.success(units));
-            })
-            .catch(error => next(error));
-        })
-        .catch(error => next(error));
-    })
-    .catch(error => next(error));
+  try {
+    if (req.level < 90) return next(new errors.UnauthorizedError());
+    if (!id) return next(new errors.MissingParameterError());
+    var unit = await models.Unit.findByPk(id);
+    if (!unit) return next(new errors.ResourceNotFoundError("Unit"));
+    await unit.destroy();
+    var units = await models.Unit.findAll(unitData);
+    res.status(200).send(errors.success(units));
+  } catch (err) {
+    next(err);
+  }
 });
 
 module.exports = router;

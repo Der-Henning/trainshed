@@ -121,7 +121,6 @@ class Trainers extends Component {
               name="persNum"
               type="text"
               value={persNum}
-              autoFocus
               required
               onChange={this.persNumChangeHandler}
             />

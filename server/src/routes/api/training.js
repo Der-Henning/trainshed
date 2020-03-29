@@ -103,8 +103,8 @@ router.get("/", auth, async (req, res, next) => {
 router.get("/statistics/trainings/:type", auth, async (req, res, next) => {
   const { type } = req.params;
 
-  if (req.level < 10) return next(new errors.UnauthorizedError());
   try {
+    if (req.level < 10) return next(new errors.UnauthorizedError());
     var statistics = await models.Training.findAll({
       attributes: [
         [fn("YEAR", col("startDate")), "year"],
@@ -128,8 +128,8 @@ router.get("/statistics/trainings/:type", auth, async (req, res, next) => {
 router.get("/statistics/units/:type", auth, async (req, res, next) => {
   const { type } = req.params;
 
-  if (req.level < 10) return next(new errors.UnauthorizedError());
   try {
+    if (req.level < 10) return next(new errors.UnauthorizedError());
     var statistics = await models.Training.findAll({
       attributes: [
         [fn("YEAR", col("startDate")), "year"],
@@ -183,10 +183,8 @@ router.get("/:trainingId", auth, async (req, res, next) => {
   try {
     if (req.level < 10) return next(new errors.UnauthorizedError());
     if (!trainingId) return next(new errors.MissingParameterError());
-
     var training = await models.Training.findByPk(trainingId, trainingData);
     if (!training) return next(new errors.ResourceNotFoundError("Training"));
-
     res.status(200).send(errors.success(training));
   } catch (err) {
     next(err);

@@ -26,93 +26,78 @@ const trainerData = {
   where: { PersonId: { [Op.not]: null } }
 };
 
-router.get("/", auth, (req, res, next) => {
-  if (req.level < 50) throw new errors.UnauthorizedError();
-  models.Trainer.findAll(trainerData)
-    .then(trainers => {
-      res.status(200).send(errors.success(trainers));
-    })
-    .catch(error => next(error));
+router.get("/", auth, async (req, res, next) => {
+  try {
+    if (req.level < 50) return next(new errors.UnauthorizedError());
+    var trainers = await models.Trainer.findAll(trainerData);
+    res.status(200).send(errors.success(trainers));
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.get("/:id", auth, (req, res, next) => {
+router.get("/:id", auth, async (req, res, next) => {
   const { id } = req.params;
 
-  if (req.level < 50) throw new errors.UnauthorizedError();
-  if (id) {
-    models.Trainer.findByPk(id, trainerData)
-      .then(trainer => {
-        if (trainer) {
-          res.status(200).send(errors.success(trainer));
-        } else throw new errors.ResourceNotFoundError("Trainer");
-      })
-      .catch(error => next(error));
-  } else throw new errors.MissingParameterError();
+  try {
+    if (req.level < 50) return next(new errors.UnauthorizedError());
+    if (!id) return next(new errors.MissingParameterError());
+    var trainer = await models.Trainer.findByPk(id, trainerData);
+    if (!trainer) return next(new errors.ResourceNotFoundError("Trainer"));
+    res.status(200).send(errors.success(trainer));
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.post("/:personId", auth, (req, res, next) => {
+router.post("/:personId", auth, async (req, res, next) => {
   const { personId } = req.params;
 
-  if (req.level < 60) throw new errors.UnauthorizedError();
-  if (personId) {
-    models.Person.findByPk(personId)
-      .then(person => {
-        if (person) {
-          models.Trainer.create({ PersonId: personId })
-            .then(trainer => {
-              models.Trainer.findByPk(trainer.id, trainerData).then(trainer => {
-                res.status(200).send(errors.success(trainer));
-              });
-            })
-            .catch(error => next(error));
-        } else throw new errors.ResourceNotFoundError("Person");
-      })
-      .catch(error => next(error));
-  } else throw new errors.MissingParameterError();
+  try {
+    if (req.level < 60) return next(new errors.UnauthorizedError());
+    if (!personId) return next(new errors.MissingParameterError());
+    var person = await models.Person.findByPk(personId);
+    if (!person) return next(new errors.ResourceNotFoundError("Person"));
+    var trainer = await models.Trainer.create({ PersonId: personId });
+    trainer = await models.Trainer.findByPk(trainer.id, trainerData);
+    res.status(200).send(errors.success(trainer));
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.put("/:id", auth, (req, res, next) => {
+router.put("/:id", auth, async (req, res, next) => {
   const { id } = req.params;
   const { bolTrainer, bolExaminer } = req.body;
 
-  if (req.level < 60) throw new errors.UnauthorizedError();
-  if (id) {
-    models.Trainer.findByPk(id)
-      .then(trainer => {
-        if (trainer) {
-          trainer.trainer = bolTrainer || trainer.trainer;
-          trainer.examiner = bolExaminer || trainer.examiner;
-          trainer
-            .save()
-            .then(trainer => {
-              res.status(200).send(errors.success(trainer));
-            })
-            .catch(error => next(error));
-        } else throw new errors.ResourceNotFoundError("Trainer");
-      })
-      .catch(error => next(error));
-  } else throw new errors.MissingParameterError();
+  try {
+    if (req.level < 60) return next(new errors.UnauthorizedError());
+    if (!id) return next(new errors.MissingParameterError());
+    var trainer = await models.Trainer.findByPk(id, trainerData);
+    if (!trainer) return next(new errors.ResourceNotFoundError("Trainer"));
+    trainer.trainer = bolTrainer || trainer.trainer;
+    trainer.examiner = bolExaminer || trainer.examiner;
+    await trainer.save();
+    res.status(200).send(errors.success(trainer));
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.delete("/:id", auth, (req, res, next) => {
+router.delete("/:id", auth, async (req, res, next) => {
   const { id } = req.params;
 
-  if (req.level < 60) throw new errors.UnauthorizedError();
-  if (id) {
-    models.Trainer.findByPk(id)
-      .then(trainer => {
-        if (trainer) {
-          trainer.PersonId = null;
-          trainer
-            .save()
-            .then(() => {
-              res.status(200).send(errors.success(null));
-            })
-            .catch(error => next(error));
-        } else throw new errors.ResourceNotFoundError("Trainer");
-      })
-      .catch(error => next(error));
-  } else throw new errors.MissingParameterError();
+  try {
+    if (req.level < 60) return next(new errors.UnauthorizedError());
+    if (!id) return next(new errors.MissingParameterError());
+    var trainer = await models.Trainer.findByPk(id);
+    if (!trainer) return next(new errors.ResourceNotFoundError("Trainer"));
+    trainer.PersonId = null;
+    await trainer.save();
+    res.status(200).send(errors.success());
+  } catch (err) {
+    next(err);
+  }
 });
 
 module.exports = router;

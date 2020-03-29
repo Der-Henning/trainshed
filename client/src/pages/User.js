@@ -15,10 +15,12 @@ class User extends Component {
         password: "",
         mail: "",
         level: 0,
-        unit: ""
+        unit: "",
+        unitId: null
       },
       userId: this.props.match.params.id,
-      unitList: []
+      unitList: [],
+      saved: true
     };
   }
 
@@ -32,7 +34,8 @@ class User extends Component {
       .then(res => {
         this.setState({
           data: res.data.data,
-          error: res.data.status
+          error: res.data.status,
+          saved: true
         });
       })
       .catch(err => {
@@ -62,7 +65,8 @@ class User extends Component {
         this.setState({
           data: res.data.data,
           userId: res.data.data.id,
-          error: res.data.status
+          error: res.data.status,
+          saved: true
         });
       })
       .catch(err => {
@@ -86,7 +90,8 @@ class User extends Component {
       .then(res => {
         this.setState({
           data: res.data.data,
-          error: res.data.status
+          error: res.data.status,
+          saved: true
         });
       })
       .catch(err => {
@@ -124,8 +129,12 @@ class User extends Component {
   changeHandler = e => {
     const { name, value } = e.target;
     var { data } = this.state;
+    if (name === "unit")
+      data["UnitId"] = e.target.childNodes[e.target.selectedIndex].getAttribute(
+        "data-id"
+      );
     data[name] = value;
-    this.setState({ data });
+    this.setState({ data, saved: false });
   };
 
   componentDidMount() {
@@ -178,8 +187,8 @@ class User extends Component {
               onChange={this.changeHandler}
             >
               <option></option>
-              {unitList.map((t, key) => {
-                return <option key={key}>{t.name}</option>;
+              {unitList.map(t => {
+                return <option key={t.id} data-id={t.id}>{t.name}</option>;
               })}
             </Form.Control>
           </Form.Group>

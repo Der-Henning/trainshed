@@ -4,55 +4,55 @@ const router = require("express").Router();
 const models = require("../../models");
 const auth = require("../../middleware/auth");
 const errors = require("../../middleware/errors");
-const { Op } = require("sequelize");
+const { literal, Op } = require("sequelize");
 const _ = require("lodash");
 
-const traineeData = {
-  attributes: ["id"],
-  include: [
-    { model: models.Person, attributes: ["id", "name", "givenName", "persNum"] }
-  ],
-  where: { PersonId: { [Op.not]: null } }
+const traineeData = unitId => {
+  return {
+    attributes: [
+      "id",
+      [literal("`Person`.id"), "PersonId"],
+      [literal("`Person`.name"), "name"],
+      [literal("`Person`.givenName"), "givenName"],
+      [literal("`Person`.persNum"), "persNum"],
+      [literal("`Person`.UnitId"), "UnitId"],
+      [literal("`Person->Unit`.name"), "unit"]
+    ],
+    include: [
+      {
+        model: models.Person,
+        attributes: [],
+        include: [{ model: models.Unit, attributes: [] }],
+        where: unitId ? { UnitId: unitId } : {}
+      }
+    ],
+    where: { PersonId: { [Op.not]: null } }
+  };
 };
 
-router.get("/", auth, (req, res, next) => {
-  models.Trainee.findAll(traineeData)
-    .then(trainees => {
-      res.status(200).send(errors.success(trainees));
-    })
-    .catch(error => next(error));
-});
-
-router.get("/findBy", auth, async (req, res, next) => {
-  const { where } = req.body;
-
-console.log(_.merge(traineeData, {where: where}));
-
-
+router.get("/", auth, async (req, res, next) => {
   try {
-    var trainees = await models.Trainee.findAll(_.merge(traineeData, {where: where}));
-
-    if (!trainees) return next(new errors.ResourceNotFoundError("Trainees"));
+    if (req.level < 30) return next(new errors.UnauthorizedError());
+    var trainees = await models.Trainee.findAll(
+      req.level < 50 ? traineeData(req.unitId) : traineeData()
+    );
     res.status(200).send(errors.success(trainees));
   } catch (err) {
     next(err);
   }
 });
 
-router.get("/:id", auth, (req, res, next) => {
+router.get("/:id", auth, async (req, res, next) => {
   const { id } = req.params;
 
-  if (id) {
-    models.Trainee.findByPk(id, traineeData)
-      .then(trainee => {
-        if (trainee) {
-          res.status(200).send(errors.success(trainee));
-        } else throw new errors.ResourceNotFoundError("Trainee");
-      })
-      .catch(error => next(error));
-  } else throw new errors.MissingParameterError();
+  try {
+    if (!id) return next(new errors.MissingParameterError());
+    var trainee = await models.Trainee.findByPk(id, traineeData());
+    if (!trainee) return next(new errors.ResourceNotFoundError("Trainee"));
+    res.status(200).send(errors.success(trainee));
+  } catch (err) {
+    next(err);
+  }
 });
-
-
 
 module.exports = router;

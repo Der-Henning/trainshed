@@ -9,83 +9,81 @@ const trainingTypeData = {
   attributes: ["id", "type"]
 };
 
-router.get("/", auth, (req, res, next) => {
-  if (req.level < 10) throw new errors.UnauthorizedError();
-  models.TrainingType.findAll(trainingTypeData)
-    .then(trainingTypes => {
-      res.status(200).send(errors.success(trainingTypes));
-    })
-    .catch(error => next(error));
+router.get("/", auth, async (req, res, next) => {
+  try {
+    if (req.level < 10) return next(new errors.UnauthorizedError());
+    var trainingTypes = await models.TrainingType.findAll(trainingTypeData);
+    res.status(200).send(errors.success(trainingTypes));
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.get("/:id", auth, (req, res, next) => {
+router.get("/:id", auth, async (req, res, next) => {
   const { id } = req.params;
 
-  if (req.level < 10) throw new errors.UnauthorizedError();
-  if (!id) throw new errors.MissingParameterError();
-  models.TrainingType.findByPk(id, trainingTypeData).then(trainingType => {
-    if (!trainingType) throw new errors.ResourceNotFoundError("Training Type");
+  try {
+    if (req.level < 10) return next(new errors.UnauthorizedError());
+    if (!id) return next(new errors.MissingParameterError());
+    var trainingType = await models.TrainingType.findByPk(id, trainingTypeData);
+    if (!trainingType)
+      return next(new errors.ResourceNotFoundError("Training Type"));
     res.status(200).send(errors.success(trainingType));
-  });
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.post("/", auth, (req, res, next) => {
+router.post("/", auth, async (req, res, next) => {
   const { type } = req.body;
 
-  if (req.level < 90) throw new errors.UnauthorizedError();
-  if (!type) throw new errors.MissingParameterError();
-  models.TrainingType.create({
-    type: type
-  })
-    .then(() => {
-      models.TrainingType.findAll(trainingTypeData)
-        .then(trainingTypes => {
-          res.status(200).send(errors.success(trainingTypes));
-        })
-        .catch(error => next(error));
-    })
-    .catch(error => next(error));
+  try {
+    if (req.level < 90) return next(new errors.UnauthorizedError());
+    if (!type) return next(new errors.MissingParameterError());
+    await models.TrainingType.create({
+      type: type
+    });
+    var trainingTypes = await models.TrainingType.findAll(trainingTypeData);
+    res.status(200).send(errors.success(trainingTypes));
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.put("/:id", auth, (req, res, next) => {
+router.put("/:id", auth, async (req, res, next) => {
   const { id } = req.params;
   const { type } = req.body;
 
-  if (req.level < 90) throw new errors.UnauthorizedError();
-  if (!id || !type) throw new errors.MissingParameterError();
-  models.TrainingType.findByPk(id).then(trainingType => {
-    if (!trainingType) throw new errors.ResourceNotFoundError("Training Type");
+  try {
+    if (req.level < 90) return next(new errors.UnauthorizedError());
+    if (!id || !type) return next(new errors.MissingParameterError());
+    var trainingType = await models.TrainingType.findByPk(id);
+    if (!trainingType)
+      return next(new errors.ResourceNotFoundError("Training Type"));
     trainingType.name = name || trainingType.name;
-    trainingType
-      .save()
-      .then(() => {
-        models.TrainingType.findAll(trainingTypeData).then(trainingTypes => {
-          res.status(200).send(errors.success(trainingTypes));
-        });
-      })
-      .catch(error => next(error));
-  });
+    await trainingType.save();
+    var trainingTypes = await models.TrainingType.findAll(trainingTypeData);
+    res.status(200).send(errors.success(trainingTypes));
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.delete("/:id", auth, (req, res, next) => {
+router.delete("/:id", auth, async (req, res, next) => {
   const { id } = req.params;
 
-  if (req.level < 90) throw new errors.UnauthorizedError();
-  if (!id) throw new errors.MissingParameterError();
-  models.TrainingType.findByPk(id)
-    .then(trainingType => {
-      if (!trainingType)
-        throw new errors.ResourceNotFoundError("Training Type");
-      trainingType
-        .destroy()
-        .then(() => {
-          models.TrainingType.findAll(trainingTypeData).then(trainingTypes => {
-            res.status(200).send(errors.success(trainingTypes));
-          });
-        })
-        .catch(error => next(error));
-    })
-    .catch(error => next(error));
+  try {
+    if (req.level < 90) return next(new errors.UnauthorizedError());
+    if (!id) return next(new errors.MissingParameterError());
+    var trainingType = await models.TrainingType.findByPk(id);
+    if (!trainingType)
+      return next(new errors.ResourceNotFoundError("Training Type"));
+    await trainingType.destroy();
+    var trainingTypes = await models.TrainingType.findAll(trainingTypeData);
+    res.status(200).send(errors.success(trainingTypes));
+  } catch (err) {
+    next(err);
+  }
 });
 
 module.exports = router;
